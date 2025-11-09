@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Touchpoint UI Test</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style>
+      body {
+        margin: 0;
+        height: 100vh;
+        display: flex;
+        background: linear-gradient(135deg, #1e1e2f, #2d2d44);
+        font-family: "Helvetica", sans-serif;
+      }
+      
+      #app {
+        width: 100%;
+        height: 100vh;
+        display: flex;
+        flex-direction: row;
+      }
+      
+      .left-panel {
+        flex: 2;
+        background: #f5f5f5;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        padding: 2rem;
+      }
+      
+      .right-panel {
+        flex: 1;
+        background: #1a1a1a;
+        min-width: 300px;
+      }
+      
+      .content-area {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        color: #333;
+      }
+      
+      .content-area h1 {
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+        color: #2c3e50;
+        opacity: 0;
+        animation: fadeInUp 0.8s ease-out 0.2s forwards;
+      }
+      
+      .content-area p {
+        font-size: 1.2rem;
+        color: #666;
+        max-width: 400px;
+        line-height: 1.6;
+        opacity: 0;
+        animation: fadeInUp 0.8s ease-out 0.4s forwards;
+      }
+      
+      .quick-actions {
+        margin-top: 2rem;
+        opacity: 0;
+        animation: fadeInUp 0.8s ease-out 0.6s forwards;
+      }
+      
+      .action-buttons {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        flex-wrap: wrap;
+        margin-top: 1.5rem;
+      }
+      
+      .action-btn {
+        padding: 0.75rem 1.5rem;
+        background: transparent;
+        border: 2px solid #3b82f6;
+        border-radius: 25px;
+        color: #3b82f6;
+        font-size: 0.9rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-block;
+      }
+      
+      .action-btn:hover {
+        background: #3b82f6;
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+      }
+      
+      .action-btn.secondary {
+        border-color: #64748b;
+        color: #64748b;
+      }
+      
+      .action-btn.secondary:hover {
+        background: #64748b;
+        color: white;
+        box-shadow: 0 4px 12px rgba(100, 116, 139, 0.3);
+      }
+      
+      @keyframes fadeInUp {
+        from {
+          opacity: 0;
+          transform: translateY(20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app">
+      <div class="left-panel">
+        <div class="content-area">
+          <h1>Welcome to Touchpoint</h1>
+          <p>Experience the power of AI-driven conversations with our intuitive chat interface. Get started by asking any question in the chat panel.</p>
+          
+          <div class="quick-actions">
+            <div class="action-buttons">
+              <button class="action-btn" onclick="startConversation('help')">Get Help</button>
+              <button class="action-btn secondary" onclick="startConversation('demo')">See Demo</button>
+              <button class="action-btn secondary" onclick="openChat()">Start Chatting</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="right-panel"></div>
+    </div>
+
+    <script type="module">
+      let touchpointLoaded = false;
+
+      async function loadTouchpoint() {
+        if (touchpointLoaded) {
+          console.log('Touchpoint already loaded');
+          return true;
+        }
+        
+        try {
+          console.log('Starting to load Touchpoint...');
+          const { create, React } = await import("https://unpkg.com/@nlxai/touchpoint-ui@1.2.1/lib/index.js?module");
+          const ReactDOM = (await import("https://esm.sh/react-dom@18.2.0")).default;
+
+          console.log('Libraries loaded, creating Touchpoint instance...');
+          
+          // Check for elements before creating
+          console.log('Elements before create():');
+          console.log('  nlx-touchpoint-launcher:', document.querySelector("nlx-touchpoint-launcher"));
+          console.log('  nlx-touchpoint:', document.querySelector("nlx-touchpoint"));
+          
+        const touchpoint = await create({
+          config: {
+              applicationUrl: "https://apps.nlx.ai/c/BND8nb6qjbhPlkA6ukhQz/iA_2k0hO29Xz9iD29x0ky",
+            headers: {
+              "nlx-api-key": "BUHL11zJT3HWxZfJlUm3JDHl",
+            },
+            languageCode: "en-US",
+            userId: "demo-user-" + Math.floor(Math.random() * 10000),
+          },
+          colorMode: "dark",
+          input: "text",
+          theme: { fontFamily: "Helvetica, sans-serif", accent: "#AECAFF" },
+        });
+
+          // Check for elements immediately after creating
+          console.log('Elements immediately after create():');
+          console.log('  nlx-touchpoint-launcher:', document.querySelector("nlx-touchpoint-launcher"));
+          console.log('  nlx-touchpoint:', document.querySelector("nlx-touchpoint"));
+
+          console.log('Touchpoint instance created:', touchpoint);
+          console.log('Available components:', Object.keys(touchpoint));
+          console.log('Full touchpoint object:', touchpoint);
+          
+          // Check if App or Launcher components exist
+          console.log('touchpoint.App exists:', !!touchpoint.App);
+          console.log('touchpoint.Launcher exists:', !!touchpoint.Launcher);
+          console.log('touchpoint.Component exists:', !!touchpoint.Component);
+          
+          const rightPanel = document.querySelector(".right-panel");
+          rightPanel.innerHTML = '';
+          
+          // Try different ways to render
+          if (touchpoint && touchpoint.App) {
+            console.log('Rendering Touchpoint App...');
+            ReactDOM.render(React.createElement(touchpoint.App), rightPanel);
+            console.log('Touchpoint App rendered');
+          } else {
+            console.warn('touchpoint.App does not exist!');
+            // Maybe the App is created differently - check the right panel after a delay
+          setTimeout(() => {
+              console.log('Right panel content after delay:', rightPanel.innerHTML);
+              console.log('Elements in right panel:', rightPanel.querySelectorAll('*'));
+            }, 2000);
+          }
+          
+          // Try to render Launcher component if it exists
+          if (touchpoint && touchpoint.Launcher) {
+            console.log('Rendering Touchpoint Launcher...');
+            const launcherContainer = document.createElement('div');
+            document.body.appendChild(launcherContainer);
+            ReactDOM.render(React.createElement(touchpoint.Launcher), launcherContainer);
+            console.log('Touchpoint Launcher rendered');
+          } else {
+            console.log('touchpoint.Launcher does not exist');
+          }
+          
+          window.touchpointApi = touchpoint;
+          touchpointLoaded = true;
+          
+          // Check for elements at different times
+          const checkElements = () => {
+            console.log('=== Checking for Touchpoint elements ===');
+            const launcher = document.querySelector("nlx-touchpoint-launcher");
+            const touchpointEl = document.querySelector("nlx-touchpoint");
+            console.log('nlx-touchpoint-launcher:', launcher);
+            console.log('nlx-touchpoint:', touchpointEl);
+            console.log('All nlx-* elements:', document.querySelectorAll('[class*="nlx"], nlx-touchpoint, nlx-touchpoint-launcher'));
+          };
+          
+          // Check immediately
+          checkElements();
+          
+          // Wait and check again
+          await new Promise(resolve => setTimeout(resolve, 500));
+          checkElements();
+          
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          checkElements();
+          
+          return true;
+        } catch (error) {
+          console.error('Error loading Touchpoint:', error);
+          return false;
+        }
+      }
+
+      function startConversation(type) {
+        console.log('Button clicked:', type);
+      }
+
+      async function openChat() {
+        console.log('Start Chatting clicked');
+        
+        // Load Touchpoint and wait for it to be ready
+        const loaded = await loadTouchpoint();
+        
+        if (!loaded) {
+          console.error('Failed to load Touchpoint');
+          return;
+        }
+        
+        // Function to try clicking the chat button
+        const tryClickChat = () => {
+          try {
+            // First, try using Touchpoint API
+            if (window.touchpointApi) {
+              console.log('Trying Touchpoint API...');
+              
+              // Try setting expanded property
+              if ('expanded' in window.touchpointApi) {
+                console.log('Current expanded value:', window.touchpointApi.expanded);
+                window.touchpointApi.expanded = true;
+                console.log('Set expanded to true, new value:', window.touchpointApi.expanded);
+                
+                // Check if chat opened after a brief delay
+        setTimeout(() => {
+                  const chatVisible = document.querySelector('.right-panel')?.innerHTML.trim() || 
+                                     document.querySelector('[class*="chat"]') ||
+                                     document.querySelector('[class*="conversation"]');
+                  console.log('Chat visible after setting expanded:', !!chatVisible);
+                }, 1000);
+                
+                return true;
+              }
+              
+              // Try conversationHandler
+              if (window.touchpointApi.conversationHandler) {
+                console.log('Trying conversationHandler...');
+                const handler = window.touchpointApi.conversationHandler;
+                console.log('Handler methods:', Object.keys(handler));
+                
+                if (typeof handler.open === 'function') {
+                  handler.open();
+                  return true;
+                }
+                if (typeof handler.start === 'function') {
+                  handler.start();
+                  return true;
+                }
+              }
+            }
+            
+            // Try nlx-touchpoint-launcher first
+            let launcher = document.querySelector("nlx-touchpoint-launcher");
+            console.log('Launcher element:', launcher);
+            
+            if (launcher && launcher.shadowRoot) {
+              const selectors = [
+                "button[aria-label='Open chat']",
+                "button[aria-label='Close chat']",
+                "button[type='button']",
+                "button"
+              ];
+              
+              for (const selector of selectors) {
+                const button = launcher.shadowRoot.querySelector(selector);
+                if (button) {
+                  console.log(`Found button with selector "${selector}", clicking...`);
+                  button.click();
+                  console.log('Chat button clicked successfully');
+                  return true;
+                }
+              }
+            }
+            
+            // Try nlx-touchpoint element (the one in the corner)
+            const touchpoint = document.querySelector("nlx-touchpoint");
+            console.log('Touchpoint element:', touchpoint);
+            
+            if (touchpoint) {
+              // Log what's in the shadow root
+              if (touchpoint.shadowRoot) {
+                console.log('Shadow root exists, inspecting...');
+                const allElements = touchpoint.shadowRoot.querySelectorAll('*');
+                console.log('All elements in shadow root:', allElements.length, Array.from(allElements).map(el => el.tagName));
+                
+                // Try multiple selectors
+                const selectors = [
+                  "button[aria-label='Open chat']",
+                  "button[aria-label*='chat' i]",
+                  "button[aria-label*='Open' i]",
+                  "button[type='button']",
+                  "button",
+                  "[role='button']",
+                  "[onclick]",
+                  "a",
+                  "div[class*='button']",
+                  "div[class*='click']"
+                ];
+                
+                for (const selector of selectors) {
+                  const element = touchpoint.shadowRoot.querySelector(selector);
+                  if (element) {
+                    console.log(`Found element with selector "${selector}":`, element);
+                    console.log('Element details:', {
+                      tagName: element.tagName,
+                      className: element.className,
+                      id: element.id,
+                      ariaLabel: element.getAttribute('aria-label'),
+                      onclick: element.onclick
+                    });
+                    
+                    // Try multiple click methods
+                    element.click();
+                    element.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, view: window }));
+                    element.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, cancelable: true }));
+                    element.dispatchEvent(new MouseEvent('mouseup', { bubbles: true, cancelable: true }));
+                    
+                    console.log('Clicked element with multiple methods');
+                    return true;
+                  }
+                }
+                
+                console.log('No clickable elements found in shadow root');
+              } else {
+                console.log('No shadow root on touchpoint element');
+              }
+              
+              // Try clicking the element itself with multiple methods
+              console.log('Trying to click nlx-touchpoint element directly...');
+              touchpoint.click();
+              touchpoint.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, view: window }));
+              touchpoint.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, cancelable: true }));
+              touchpoint.dispatchEvent(new MouseEvent('mouseup', { bubbles: true, cancelable: true }));
+              
+              // Try setting attributes
+              touchpoint.setAttribute('open', 'true');
+              touchpoint.setAttribute('expanded', 'true');
+              
+              // Check if element has any methods
+              console.log('Touchpoint element methods:', Object.getOwnPropertyNames(touchpoint).filter(prop => typeof touchpoint[prop] === 'function'));
+              
+              return true;
+            }
+            
+            // Try finding element at corner coordinates
+            const cornerX = window.innerWidth - 50;
+            const cornerY = window.innerHeight - 50;
+            const elementAtPoint = document.elementFromPoint(cornerX, cornerY);
+            if (elementAtPoint) {
+              console.log('Found element at corner:', elementAtPoint.tagName);
+              const target = elementAtPoint.closest('nlx-touchpoint') || elementAtPoint.closest('nlx-touchpoint-launcher') || elementAtPoint;
+              if (target.shadowRoot) {
+                const button = target.shadowRoot.querySelector("button");
+                if (button) {
+                  button.click();
+                  return true;
+                }
+              }
+              target.click();
+              return true;
+            }
+            
+            return false;
+          } catch (error) {
+            console.error('Error opening chat:', error);
+            return false;
+          }
+        };
+
+        // Wait for Touchpoint to render, then open chat
+        let attempts = 0;
+        const maxAttempts = 15;
+        
+        const tryOpen = () => {
+          attempts++;
+          console.log(`Attempt ${attempts} to open chat`);
+          
+          if (tryClickChat()) {
+            console.log('Chat opened on attempt', attempts);
+            return;
+          }
+          
+          if (attempts < maxAttempts) {
+            setTimeout(tryOpen, 500);
+          } else {
+            console.warn('Max attempts reached, could not open chat. Launcher may not have loaded.');
+          }
+        };
+        
+        // Start trying after a delay
+        setTimeout(tryOpen, 500);
+      }
+
+      window.startConversation = startConversation;
+      window.openChat = openChat;
+    </script>
+  </body>
+</html>
