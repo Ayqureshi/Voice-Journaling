@@ -32,8 +32,26 @@
       
       .right-panel {
         flex: 1;
-        background: #1a1a1a;
+        background-image: url('images/tiger.png'); 
+        background-size: cover; 
+        background-position: center; 
+        background-repeat: repeat; 
         min-width: 300px;
+        opacity: 1;
+        transition: opacity 0.4s ease-in;
+      }
+      
+      .right-panel.chat-open {
+        opacity: 1;
+      }
+      
+      @keyframes fadeIn {
+        from {
+        opacity: 0;
+        }
+        to {
+          opacity: 1;
+        }
       }
       
       .content-area {
@@ -125,8 +143,8 @@
     <div id="app">
       <div class="left-panel">
         <div class="content-area">
-          <h1>Welcome to Touchpoint</h1>
-          <p>Experience the power of AI-driven conversations with our intuitive chat interface. Get started by asking any question in the chat panel.</p>
+          <h1>Welcome to Voice Journaling</h1>
+          <p>Ready for a breakthrough? Voice journaling gives you a director's cut of your life to analyze, process, and thrive.</p>
           
           <div class="quick-actions">
             <div class="action-buttons">
@@ -171,7 +189,7 @@
             userId: "demo-user-" + Math.floor(Math.random() * 10000),
           },
           colorMode: "dark",
-          input: "text",
+          input: "voice",
           theme: { fontFamily: "Helvetica, sans-serif", accent: "#AECAFF" },
         });
 
@@ -233,11 +251,8 @@
           // Check immediately
           checkElements();
           
-          // Wait and check again
-          await new Promise(resolve => setTimeout(resolve, 500));
-          checkElements();
-          
-          await new Promise(resolve => setTimeout(resolve, 1000));
+          // Wait briefly and check again
+          await new Promise(resolve => setTimeout(resolve, 200));
           checkElements();
           
           return true;
@@ -272,16 +287,34 @@
               // Try setting expanded property
               if ('expanded' in window.touchpointApi) {
                 console.log('Current expanded value:', window.touchpointApi.expanded);
-                window.touchpointApi.expanded = true;
-                console.log('Set expanded to true, new value:', window.touchpointApi.expanded);
                 
-                // Check if chat opened after a brief delay
-        setTimeout(() => {
-                  const chatVisible = document.querySelector('.right-panel')?.innerHTML.trim() || 
-                                     document.querySelector('[class*="chat"]') ||
-                                     document.querySelector('[class*="conversation"]');
-                  console.log('Chat visible after setting expanded:', !!chatVisible);
-                }, 1000);
+                // Try setting it multiple ways
+                try {
+                  window.touchpointApi.expanded = true;
+                } catch (e) {
+                  console.log('Error setting expanded directly:', e);
+                }
+                
+                // Also try calling it as a function if it's a getter/setter
+                if (typeof window.touchpointApi.expanded === 'function') {
+                  window.touchpointApi.expanded(true);
+                }
+                
+                // Force update by accessing it
+                const newValue = window.touchpointApi.expanded;
+                console.log('expanded after setting:', newValue);
+                
+                // If it's still false, try toggling
+                if (newValue === false) {
+                  window.touchpointApi.expanded = !window.touchpointApi.expanded;
+                  window.touchpointApi.expanded = true;
+                }
+                
+                // Trigger fade-in animation
+                const rightPanel = document.querySelector('.right-panel');
+                if (rightPanel) {
+                  rightPanel.classList.add('chat-open');
+                }
                 
                 return true;
               }
@@ -294,10 +327,20 @@
                 
                 if (typeof handler.open === 'function') {
                   handler.open();
+                  // Trigger fade-in animation
+                  const rightPanel = document.querySelector('.right-panel');
+                  if (rightPanel) {
+                    rightPanel.classList.add('chat-open');
+                  }
                   return true;
                 }
                 if (typeof handler.start === 'function') {
                   handler.start();
+                  // Trigger fade-in animation
+                  const rightPanel = document.querySelector('.right-panel');
+                  if (rightPanel) {
+                    rightPanel.classList.add('chat-open');
+                  }
                   return true;
                 }
               }
@@ -369,6 +412,12 @@
                     element.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, cancelable: true }));
                     element.dispatchEvent(new MouseEvent('mouseup', { bubbles: true, cancelable: true }));
                     
+                    // Trigger fade-in animation
+                    const rightPanel = document.querySelector('.right-panel');
+                    if (rightPanel) {
+                      rightPanel.classList.add('chat-open');
+                    }
+                    
                     console.log('Clicked element with multiple methods');
                     return true;
                   }
@@ -390,6 +439,12 @@
               touchpoint.setAttribute('open', 'true');
               touchpoint.setAttribute('expanded', 'true');
               
+              // Trigger fade-in animation
+              const rightPanel = document.querySelector('.right-panel');
+              if (rightPanel) {
+                rightPanel.classList.add('chat-open');
+              }
+              
               // Check if element has any methods
               console.log('Touchpoint element methods:', Object.getOwnPropertyNames(touchpoint).filter(prop => typeof touchpoint[prop] === 'function'));
               
@@ -407,10 +462,20 @@
                 const button = target.shadowRoot.querySelector("button");
                 if (button) {
                   button.click();
+                  // Trigger fade-in animation
+                  const rightPanel = document.querySelector('.right-panel');
+                  if (rightPanel) {
+                    rightPanel.classList.add('chat-open');
+                  }
                   return true;
                 }
               }
               target.click();
+              // Trigger fade-in animation
+              const rightPanel = document.querySelector('.right-panel');
+              if (rightPanel) {
+                rightPanel.classList.add('chat-open');
+              }
               return true;
             }
             
@@ -421,9 +486,15 @@
           }
         };
 
-        // Wait for Touchpoint to render, then open chat
+        // Try opening immediately, then retry if needed
+        if (tryClickChat()) {
+          console.log('Chat opened immediately!');
+          return;
+        }
+        
+        // If not opened immediately, retry quickly
         let attempts = 0;
-        const maxAttempts = 15;
+        const maxAttempts = 5;
         
         const tryOpen = () => {
           attempts++;
@@ -435,14 +506,14 @@
           }
           
           if (attempts < maxAttempts) {
-            setTimeout(tryOpen, 500);
+            setTimeout(tryOpen, 100);
           } else {
-            console.warn('Max attempts reached, could not open chat. Launcher may not have loaded.');
+            console.warn('Max attempts reached, could not open chat.');
           }
         };
         
-        // Start trying after a delay
-        setTimeout(tryOpen, 500);
+        // Start retrying after a very short delay
+        setTimeout(tryOpen, 100);
       }
 
       window.startConversation = startConversation;
